@@ -31,6 +31,7 @@
 									class="glyphicon glyphicon-user"></span>&nbsp;账号</label> <input
 									type="text" class="form-control input" placeholder="" autofocus
 									name="userName" id="userName" onblur="checkUserName(this)">
+								<span id="tip" style="color: red; font-weight: bold"></span>
 							</div>
 							<div class="form-group">
 								<label for="input_email"><span
@@ -55,7 +56,8 @@
 									class="glyphicon glyphicon-lock"></span>&nbsp;验证码</label>
 								<div class="input-group">
 									<input type="password" class="form-control" placeholder="">
-									<span class="input-group-addon"><a href="">发送验证码</a></span>
+									<span class="input-group-addon"><input type="button"
+										value="发送" onclick="sendCode(this)"></span>
 								</div>
 							</div>
 							<div class="col-md-12">
@@ -78,18 +80,57 @@
 </script>
 <script>
 	//检查用户名是否已经存在
-	function checkUserName(input){
-		alert(input);
+	function checkUserName(input) {
+		//alert(input.value);
+		var name = input.value;
+		$.post("<%=path%>/checkUserName.action", {
+			userName : name
+		}, function(data) {
+			//alert(data);
+			if (data == 1) {
+				$('#tip').html("当前用户已经存在！");
+			} else {
+				$('#tip').html("");
+			}
+		});
 	}
-	//随机生成四位字符串
+	//随机生成验证码
 	function createCode(sum) {
 		var code = "";
-		for (var i = 0; i <= sum; i++) {
+		for (var i = 0; i <sum; i++) {
 			var num = parseInt(Math.random() * 10) % 10;
 			code += num;
 		}
 		return code;
 	}
+	
+	//发送手机验证码
+	function sendCode(input) {
+		input.setAttribute("disabled", "disabled");
+		var count = 60;
+		var time = setInterval(function(){
+			input.value=count+"s";
+			count--;
+			if(count<0){
+				input.removeAttribute("disabled");
+				clearInterval(time);
+				input.value="发送";
+			}
+		},1000);
+		
+		//生成6位验证码
+		var phone = $("#phone").val();
+		//alert(phone);
+		var code = createCode(6);
+		alert(code);
+		$.post("<%=path%>/sendCode.action",{
+			phone: phone,
+			code: code
+		},function(data){
+			
+		});
+	}
+	
 	//键盘回车提交表单
 	$(document).ready(function() {
 		$(document).keydown(function(event) {
@@ -105,9 +146,12 @@
 		var pwd_sure = $("#pwd_sure").val();
 		var phone = $("#phone").val();
 		if (pwd.length >= 6 && pwd == pwd_sure) {
-			alert("校验成功");
+			//alert("校验成功");
 		} else {
 			alert("密码少于6位数或者两次输入密码不一致！");
+		}
+		if(phone<11){
+			alert("手机号格式不正确！");
 		}
 	}
 </script>
