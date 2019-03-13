@@ -29,34 +29,35 @@
 								<label for="input_name"><span
 									class="glyphicon glyphicon-user"></span>&nbsp;账号</label> <input
 									type="text" class="form-control input" placeholder="" autofocus
-									name="userName" id="userName" onblur="checkUserName(this)">
+									name="userName" id="userName" onblur="checkUserName(this)" maxlength="15">
 								<span id="tip" style="color: red; font-weight: bold"></span>
 							</div>
 							<div class="form-group">
 								<label for="input_email"><span
 									class="glyphicon glyphicon-lock"></span>&nbsp;密码 </label> <input
 									type="password" class="form-control" placeholder="" name="pwd"
-									id="pwd">
+									id="pwd" maxlength="20">
 							</div>
 							<div class="form-group">
 								<label for="input_email"><span
 									class="glyphicon glyphicon-lock"></span>&nbsp;确认密码 </label> <input
 									type="password" class="form-control" placeholder=""
-									name="pwd_sure" id="pwd_sure">
+									name="pwd_sure" id="pwd_sure" maxlength="20">
 							</div>
 							<div class="form-group">
 								<label for="input_phone"><span
 									class="glyphicon glyphicon-phone"></span>&nbsp;手机号</label> <input
 									class="form-control" placeholder="" name="phone" type="text"
-									id="phone">
+									id="phone" maxlength="11">
 							</div>
 							<div class="form-group">
 								<label for="input_password"><span
 									class="glyphicon glyphicon-lock"></span>&nbsp;验证码</label>
 								<div class="input-group">
-									<input type="password" class="form-control" placeholder=""
-										id="codeInput"> <span class="input-group-addon"><input
-										type="button" value="获取验证码" onclick="sendCode(this)"></span>
+									<input type="text" class="form-control" placeholder=""
+										id="codeInput" maxlength="6"> <span class="input-group-addon">
+										<input
+										type="button" value="获取验证码" onclick="sendCode(this)" style="border:none"></span>
 								</div>
 							</div>
 							<div class="col-md-12">
@@ -90,7 +91,7 @@ var codeIsOK = false;
 		}, function(data) {
 			//alert(data);
 			if (data == 1) {
-				$('#tip').html("当前用户已经存在！");
+				$('#tip').html("当前账号已经存在！");
 				nameIsOk = false;
 			} else {
 				$('#tip').html("");
@@ -110,8 +111,11 @@ var codeIsOK = false;
 	
 	//发送手机验证码
 	function sendCode(input) {
-		if($("#phone").val()==""){
-			alert("手机号不能为空");
+		var phone = $("#phone").val();
+		var pattern = /^1[34578]\d{9}$/;
+		if(phone==""||phone==null||!pattern.test(phone)){
+			alert("手机号为空或格式错误!");
+			return;
 		}else{
 			input.setAttribute("disabled", "disabled");
 			var count = 60;
@@ -138,8 +142,6 @@ var codeIsOK = false;
 			});
 		}
 	}
-
-
 	//注册
 	function register() {
 		var userName = $("#userName").val();
@@ -147,32 +149,41 @@ var codeIsOK = false;
 		var pwd_sure = $("#pwd_sure").val();
 		var phone = $("#phone").val();
 		var codeInput = $("#codeInput").val();
-		if(userName==""){
-			alert("用户名不能为空");
-		}else if(pwd==""){
-			alert("密码 不能为空");
+		var pattern = /^1[34578]\d{9}$/;
+		if($.trim(userName)==""||userName==null){
+			alert("用户名不能为空！");
+			return;
+		}else if(pwd==""||pwd==null){
+			alert("密码不能为空！");
+			return;
 		}else if(pwd.length<6){
-			alert("至少6位");
+			alert("密码至少6位！");
+			return;
 		}
 		else if(pwd_sure==""){
-			alert("确认密码 不能为空");
+			alert("确认密码不能为空!");
+			return;
 		}
 		else if(pwd != pwd_sure){
 			alert("两次输入密码不一致！");
-		}else if(phone==""){
-			alert("手机号码不能为空");
+			return;
+		}else if(phone==""||phone==null){
+			alert("手机号码不能为空!");
+			return;
 		}
-		else if(phone.length<11){
+		else if(!pattern.test(phone)){
 			alert("手机号格式不正确！");
-		}else if(codeInput==""){
+			return;
+		}else if(codeInput==""||codeInput==null){
 			alert("验证码不能为空！");
+			return;
 		}
 		if(code == codeInput){
 			//alert("验证码输入正确！");
 			codeIsOK = true;
 			//alert(codeIsOK);
 		}else{
-			//alert("验证码输入c错误！");
+			alert("验证码输入错误！");
 			codeIsOK = false;
 		}
 		//alert(nameIsOk);
@@ -189,12 +200,13 @@ var codeIsOK = false;
 					alert("注册成功！");
 					window.location.href="<%=path%>/page/home/login.jsp";
 				}else{
-					//alert("注册失败！");
+					alert("注册失败！");
 				}
 			});
 		}
 	}
 	//键盘回车提交表单
+	/*
 	$(document).ready(function() {
 		$(document).keydown(function(event) {
 			if (event.keycode == 13) {
@@ -202,5 +214,6 @@ var codeIsOK = false;
 			}
 		})
 	})
+	*/
 </script>
 </html>
