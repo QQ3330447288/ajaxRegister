@@ -12,7 +12,6 @@
 	href="https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/css/bootstrap.min.css"
 	integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u"
 	crossorigin="anonymous">
-<link rel="stylesheet" href="<%=path%>/static/home/style/home.css">
 </head>
 <body>
 	<div class="container" style="margin-top: 60px">
@@ -55,9 +54,9 @@
 								<label for="input_password"><span
 									class="glyphicon glyphicon-lock"></span>&nbsp;验证码</label>
 								<div class="input-group">
-									<input type="password" class="form-control" placeholder="">
-									<span class="input-group-addon"><input type="button"
-										value="发送" onclick="sendCode(this)"></span>
+									<input type="password" class="form-control" placeholder=""
+										id="codeInput"> <span class="input-group-addon"><input
+										type="button" value="获取验证码" onclick="sendCode(this)"></span>
 								</div>
 							</div>
 							<div class="col-md-12">
@@ -79,6 +78,9 @@
 	
 </script>
 <script>
+var code = "";
+var nameIsOk = false;
+var codeIsOK = false;
 	//检查用户名是否已经存在
 	function checkUserName(input) {
 		//alert(input.value);
@@ -89,14 +91,16 @@
 			//alert(data);
 			if (data == 1) {
 				$('#tip').html("当前用户已经存在！");
+				nameIsOk = false;
 			} else {
 				$('#tip').html("");
+				nameIsOk = true;
 			}
 		});
 	}
 	//随机生成验证码
 	function createCode(sum) {
-		var code = "";
+		code = "";
 		for (var i = 0; i <sum; i++) {
 			var num = parseInt(Math.random() * 10) % 10;
 			code += num;
@@ -106,31 +110,90 @@
 	
 	//发送手机验证码
 	function sendCode(input) {
-		input.setAttribute("disabled", "disabled");
-		var count = 60;
-		var time = setInterval(function(){
-			input.value=count+"s";
-			count--;
-			if(count<0){
-				input.removeAttribute("disabled");
-				clearInterval(time);
-				input.value="发送";
-			}
-		},1000);
-		
-		//生成6位验证码
-		var phone = $("#phone").val();
-		//alert(phone);
-		var code = createCode(6);
-		alert(code);
-		$.post("<%=path%>/sendCode.action",{
-			phone: phone,
-			code: code
-		},function(data){
+		if($("#phone").val()==""){
+			alert("手机号不能为空");
+		}else{
+			input.setAttribute("disabled", "disabled");
+			var count = 60;
+			var time = setInterval(function(){
+				input.value=count+"s";
+				count--;
+				if(count<0){
+					input.removeAttribute("disabled");
+					clearInterval(time);
+					input.value="发送";
+				}
+			},1000);
 			
-		});
+			//生成6位验证码
+			var phone = $("#phone").val();
+			//alert(phone);
+			var code = createCode(6);
+			//alert(code);
+				$.post("<%=path%>/sendCode.action", {
+				phone : phone,
+				code : code
+			}, function(data) {
+
+			});
+		}
 	}
-	
+
+
+	//注册
+	function register() {
+		var userName = $("#userName").val();
+		var pwd = $("#pwd").val();
+		var pwd_sure = $("#pwd_sure").val();
+		var phone = $("#phone").val();
+		var codeInput = $("#codeInput").val();
+		if(userName==""){
+			alert("用户名不能为空");
+		}else if(pwd==""){
+			alert("密码 不能为空");
+		}else if(pwd.length<6){
+			alert("至少6位");
+		}
+		else if(pwd_sure==""){
+			alert("确认密码 不能为空");
+		}
+		else if(pwd != pwd_sure){
+			alert("两次输入密码不一致！");
+		}else if(phone==""){
+			alert("手机号码不能为空");
+		}
+		else if(phone.length<11){
+			alert("手机号格式不正确！");
+		}else if(codeInput==""){
+			alert("验证码不能为空！");
+		}
+		if(code == codeInput){
+			//alert("验证码输入正确！");
+			codeIsOK = true;
+			//alert(codeIsOK);
+		}else{
+			//alert("验证码输入c错误！");
+			codeIsOK = false;
+		}
+		//alert(nameIsOk);
+		//alert(codeIsOK);
+		if(nameIsOk==true&&codeIsOK==true){
+			//alert(1);
+			$.post("<%=path%>/addUser.action", {
+				userName:userName,
+				pwd : pwd,
+				phone : phone
+			},function(data){
+				//alert(data);
+				if(data==1){
+					alert("注册成功！");
+					window.location.href="<%=path%>/page/home/login.jsp";
+				}else{
+					//alert("注册失败！");
+				}
+			});
+		}
+	}
 	//键盘回车提交表单
 	$(document).ready(function() {
 		$(document).keydown(function(event) {
@@ -139,20 +202,5 @@
 			}
 		})
 	})
-	//注册
-	function register() {
-		var userName = $("#userName").val();
-		var pwd = $("#pwd").val();
-		var pwd_sure = $("#pwd_sure").val();
-		var phone = $("#phone").val();
-		if (pwd.length >= 6 && pwd == pwd_sure) {
-			//alert("校验成功");
-		} else {
-			alert("密码少于6位数或者两次输入密码不一致！");
-		}
-		if(phone<11){
-			alert("手机号格式不正确！");
-		}
-	}
 </script>
 </html>
